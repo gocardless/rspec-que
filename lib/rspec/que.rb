@@ -1,9 +1,9 @@
-require 'rspec/que/enqueue_a'
+require 'rspec/que/queue_up'
 
 module RSpec
   module Que
-    def enqueue_a(job_class)
-      Matchers::EnqueueA.new(job_class)
+    def queue_up(job_class)
+      Matchers::QueueUp.new(job_class)
     end
 
     def purge_jobs

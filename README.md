@@ -27,7 +27,7 @@ RSpec.describe MyController do
   let(:params) { { user_id: user.id } }
   subject(:make_request) { described_class.make_request(params) }
 
-  specify { expect { make_request }.to enqueue_a(RequestMaker).with(user) }
+  specify { expect { make_request }.to queue_up(RequestMaker).with(user) }
 end
 ```
 

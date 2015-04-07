@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe RSpec::Que::Matchers::EnqueueA do
+RSpec.describe RSpec::Que::Matchers::QueueUp do
   class AJob; end
   class BJob; end
   let(:enqueued_jobs) { [] }
@@ -35,7 +35,7 @@ RSpec.describe RSpec::Que::Matchers::EnqueueA do
       specify do
         matches?
         expect(instance.failure_message).
-          to eq("expected to enqueue a BJob, enqueued a AJob")
+          to eq("expected to queue up a BJob, enqueued a AJob")
       end
     end
 
@@ -64,7 +64,7 @@ RSpec.describe RSpec::Que::Matchers::EnqueueA do
       specify do
         matches?
         expect(instance.failure_message).
-          to eq("expected to enqueue a AJob with #{arguments}, but enqueued with []")
+          to eq("expected to queue up a AJob with #{arguments}, but enqueued with []")
       end
     end
   end

@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.summary = 'RSpec matchers to test Que'
   s.description = <<-EOL
     RSpec matchers for Que:
-    * expect { method }.to enqueue_a(MyJob).with(some_arguments)
+    * expect { method }.to queue_up(MyJob).with(some_arguments)
   EOL
   s.homepage = 'http://github.com/gocardless/rspec-que'
   s.license = 'MIT'

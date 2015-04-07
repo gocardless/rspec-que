@@ -3,7 +3,7 @@ require 'rspec/mocks/argument_list_matcher'
 module RSpec
   module Que
     module Matchers
-      class EnqueueA
+      class QueueUp
         def initialize(job_class = nil)
           @job_class = job_class
         end
@@ -27,11 +27,11 @@ module RSpec
           end
 
           unless enqueued_correct_class?
-            return "expected to enqueue a #{job_class}, " \
+            return "expected to queue up a #{job_class}, " \
                    "enqueued a #{enqueued_jobs.last[:job_class]}"
           end
 
-          "expected to enqueue a #{job_class} with " \
+          "expected to queue up a #{job_class} with " \
           "#{argument_list_matcher.expected_args}, but enqueued with " \
           "#{new_jobs_with_correct_class.first[:args]}"
         end
@@ -41,9 +41,9 @@ module RSpec
         end
 
         def description
-          return "enqueue a job" unless job_class
-          return "enqueue a #{job_class.name}" unless argument_list_matcher
-          "enqueue a #{job_class.name} with #{argument_list_matcher.expected_args}"
+          return "queues up a job" unless job_class
+          return "queues up a #{job_class.name}" unless argument_list_matcher
+          "queues up a #{job_class.name} with #{argument_list_matcher.expected_args}"
         end
 
         private
