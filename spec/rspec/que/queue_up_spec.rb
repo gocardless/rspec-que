@@ -46,6 +46,16 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
 
       it { is_expected.to be(true) }
     end
+
+    context "and nothing was expected" do
+      let(:proc) { -> { enqueued_jobs << { job_class: "AJob", args: [] } } }
+
+      specify do
+        matches?
+        expect(instance.failure_message_when_negated).
+          to eq("expected to not enqueue anything, got AJob enqueued with []")
+      end
+    end
   end
 
   context "with argument expectations" do
