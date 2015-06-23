@@ -36,6 +36,11 @@ module RSpec
           "#{new_jobs_with_correct_class.first[:args]}"
         end
 
+        def failure_message_when_negated
+          "expected to not enqueue anything, got %s enqueued with %s" %
+            [new_jobs.first[:job_class], new_jobs.first[:args]]
+        end
+
         def supports_block_expectations?
           true
         end
