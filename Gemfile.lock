@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rspec-que (0.1.0)
+    rspec-que (1.0.0)
       rspec-mocks
 
 GEM
@@ -55,3 +55,6 @@ DEPENDENCIES
   rspec-its
   rspec-que!
   rubocop
+
+BUNDLED WITH
+   1.10.6

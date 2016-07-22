@@ -19,7 +19,7 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
     specify do
       matches?
       expect(instance.failure_message).
-        to eq("expected to enqueue a job, enqueued nothing")
+        to eq("expected to enqueue a job, but found nothing")
     end
   end
 
@@ -35,7 +35,7 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       specify do
         matches?
         expect(instance.failure_message).
-          to eq("expected to queue up a BJob, enqueued a AJob")
+          to eq("expected to enqueue a job of class BJob, but found AJob")
       end
     end
 
@@ -53,7 +53,7 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       specify do
         matches?
         expect(instance.failure_message_when_negated).
-          to eq("expected to not enqueue anything, got AJob enqueued with []")
+          to eq("expected not to enqueue a job, got AJob enqueued with []")
       end
     end
   end
@@ -74,7 +74,7 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       specify do
         matches?
         expect(instance.failure_message).
-          to eq("expected to queue up a AJob with #{arguments}, but enqueued with []")
+          to eq("expected to enqueue a job of class AJob with args #{arguments}, but found job enqueued with []")
       end
     end
   end
