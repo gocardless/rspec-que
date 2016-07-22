@@ -3,6 +3,7 @@ require 'spec_helper'
 RSpec.describe RSpec::Que::Matchers::QueueUp do
   class AJob; end
   class BJob; end
+  class CJob; end
   let(:enqueued_jobs) { [] }
   before do
     allow(Que).
@@ -44,16 +45,38 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       let(:job_b) { { job_class: "BJob", args: [] } }
       let(:proc) { -> { enqueued_jobs << job_a << job_b } }
 
-      it { is_expected.to be(true) }
+      context "and one is of acceptable type" do
+        it { is_expected.to be(true) }
+      end
+
+      context "and we were expecting none of the first type" do
+        let(:job_class) { AJob }
+        specify do
+          matches?
+          expect(instance.failure_message_when_negated).
+            to eq "expected not to enqueue a job of class AJob, got 1 enqueued: AJob[]"
+        end
+      end
+
+      context "and both are of the wrong type" do
+        let(:job_class) { CJob }
+
+        it { is_expected.to be(false) }
+        specify do
+          matches?
+          expect(instance.failure_message).
+            to eq("expected to enqueue a job of class CJob, but found 2 jobs of class [AJob, BJob]")
+        end
+      end
     end
 
     context "and nothing was expected" do
-      let(:proc) { -> { enqueued_jobs << { job_class: "AJob", args: [] } } }
+      let(:proc) { -> { enqueued_jobs << { job_class: "AJob", args: [11] } } }
 
       specify do
         matches?
         expect(instance.failure_message_when_negated).
-          to eq("expected not to enqueue a job, got AJob enqueued with []")
+          to eq("expected not to enqueue a job, got 1 enqueued: AJob[11]")
       end
     end
   end
@@ -75,6 +98,22 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
         matches?
         expect(instance.failure_message).
           to eq("expected to enqueue a job of class AJob with args #{arguments}, but found job enqueued with []")
+      end
+    end
+
+    context "with multiple mismatching arguments" do
+      let(:proc) do
+        -> {
+          enqueued_jobs << { job_class: "AJob", args: [] }
+          enqueued_jobs << { job_class: "AJob", args: [23, :skidoo] }
+        }
+      end
+
+      it { is_expected.to be(false) }
+      specify do
+        matches?
+        expect(instance.failure_message).
+          to eq("expected to enqueue a job of class AJob with args #{arguments}, but found 2 jobs with args: [[], [23, :skidoo]]")
       end
     end
   end

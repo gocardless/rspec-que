@@ -9,7 +9,7 @@ module RSpec
             true
           end
           def desc
-            "to enqueue a job"
+            "a job"
           end
           def failed_msg(last_found)
             "nothing"
@@ -32,8 +32,7 @@ module RSpec
             if classes.length == 1
               classes.first
             else
-              # TODO test me
-              "#{classes.length} job(s) of class #{classes}"
+              "#{classes.length} jobs of class [#{classes.join(', ')}]"
             end
           end
         end
@@ -53,10 +52,8 @@ module RSpec
             if candidates.length == 1
               "job enqueued with #{candidates.first[:args]}"
             else
-              # TODO test
-              "#{candidates.length} jobs with args: " + [
-                candidates.map {|j| j[:args] }
-              ].to_s
+              "#{candidates.length} jobs with args: " +
+                candidates.map {|j| j[:args] }.to_s
             end
           end
         end
@@ -105,13 +102,12 @@ module RSpec
           failed_candidates = failed_stage[:candidates]
           found_instead = failed_matcher.failed_msg(failed_candidates)
 
-          "expected #{job_description}, but found #{found_instead}"
+          "expected to enqueue #{job_description}, but found #{found_instead}"
         end
 
         def failure_message_when_negated
-          matched = @matched_jobs.first
-          "expected not #{job_description}, got %s enqueued with %s" %
-            [matched[:job_class], matched[:args]]
+          "expected not to enqueue #{job_description}, got %d enqueued: %s" %
+            [@matched_jobs.length, @matched_jobs.map { |j| format_job(j) }.join(", ")]
         end
 
         def supports_block_expectations?
@@ -132,6 +128,10 @@ module RSpec
 
         def job_description
           @matchers.map(&:desc).join(" ")
+        end
+
+        def format_job(job)
+          "#{job[:job_class]}[" + job[:args].join(", ") + "]"
         end
       end
     end
