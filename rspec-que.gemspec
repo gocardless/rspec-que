@@ -1,11 +1,12 @@
 require File.expand_path('../lib/rspec/que/version', __FILE__)
+require 'date'
 
 Gem::Specification.new do |s|
   s.name = 'rspec-que'
   s.version = RSpec::Que::VERSION
   s.date = Date.today.strftime('%Y-%m-%d')
-  s.authors = ['Baris Balic']
-  s.email = ['baris@gocardless.com']
+  s.authors = ['GoCardless Engineering']
+  s.email = ['developers@gocardless.com']
   s.summary = 'RSpec matchers to test Que'
   s.description = <<-EOL
     RSpec matchers for Que:

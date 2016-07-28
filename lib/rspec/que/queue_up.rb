@@ -5,6 +5,8 @@ module RSpec
   module Que
     module Matchers
       class QueueUp
+        include RSpec::Matchers::Composable
+
         def initialize(job_class = nil)
           @matchers = [QueuedSomething.new]
           @matchers << QueuedClass.new(job_class) if job_class

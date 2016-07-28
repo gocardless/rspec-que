@@ -160,5 +160,14 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
         end
       end
     end
+
+    describe '#and' do
+      it 'allows composition' do
+        expect { proc.call }.
+          to described_class.new(AJob).with('madoka').
+          and described_class.new(AJob).with('yuna').at(t2).
+          and described_class.new.with('senjougahara').at(t3)
+      end
+    end
   end
 end
