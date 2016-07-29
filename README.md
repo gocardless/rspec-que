@@ -38,3 +38,17 @@ RSpec.describe MyController do
   specify { expect { make_request }.to queue_up(DelayedRequest).at(later_time) }
 end
 ```
+
+## Development
+
+Setup:
+``` shell
+bundle install
+```
+
+Run tests:
+
+``` shell
+bundle exec rake
+
+```

@@ -20,8 +20,8 @@ module RSpec
 
           @matched_jobs = enqueued_jobs - before_jobs
           @matchers.each do |matcher|
-            @stages << {matcher: matcher, candidates: @matched_jobs.dup}
-            @matched_jobs.delete_if {|job| !matcher.matches?(job) }
+            @stages << { matcher: matcher, candidates: @matched_jobs.dup }
+            @matched_jobs.delete_if { |job| !matcher.matches?(job) }
           end
           @matched_jobs.any?
         end
@@ -39,7 +39,9 @@ module RSpec
 
         def failure_message
           # last stage to have any candidate jobs
-          failed_stage = @stages.reject {|s| s[:candidates].empty? }.last || @stages.first
+          failed_stage = @stages.reject do |s|
+            s[:candidates].empty?
+          end.last || @stages.first
           failed_matcher = failed_stage[:matcher]
           failed_candidates = failed_stage[:candidates]
           found_instead = failed_matcher.failed_msg(failed_candidates)
@@ -48,8 +50,9 @@ module RSpec
         end
 
         def failure_message_when_negated
-          "expected not to enqueue #{job_description}, got %d enqueued: %s" %
-            [@matched_jobs.length, @matched_jobs.map { |j| format_job(j) }.join(", ")]
+          format "expected not to enqueue #{job_description}, got %d enqueued: %s",
+                 @matched_jobs.length,
+                 @matched_jobs.map { |j| format_job(j) }.join(", ")
         end
 
         def supports_block_expectations?
@@ -57,7 +60,7 @@ module RSpec
         end
 
         def description
-          return "queues up a #{job_description}"
+          "queues up a #{job_description}"
         end
 
         private
@@ -77,13 +80,15 @@ module RSpec
         end
 
         class QueuedSomething
-          def matches?(job)
+          def matches?(_job)
             true
           end
+
           def desc
             "a job"
           end
-          def failed_msg(last_found)
+
+          def failed_msg(_last_found)
             "nothing"
           end
         end
@@ -93,14 +98,17 @@ module RSpec
           def initialize(job_class)
             @job_class = job_class
           end
+
           def matches?(job)
             job[:job_class] == job_class.to_s
           end
+
           def desc
             "of class #{job_class}"
           end
+
           def failed_msg(candidates)
-            classes = candidates.map {|c| c[:job_class] }
+            classes = candidates.map { |c| c[:job_class] }
             if classes.length == 1
               classes.first
             else
@@ -114,18 +122,21 @@ module RSpec
             @args = args
             @argument_list_matcher = RSpec::Mocks::ArgumentListMatcher.new(*args)
           end
+
           def matches?(job)
             @argument_list_matcher.args_match?(*job[:args])
           end
+
           def desc
             "with args #{@args}"
           end
+
           def failed_msg(candidates)
             if candidates.length == 1
               "job enqueued with #{candidates.first[:args]}"
             else
               "#{candidates.length} jobs with args: " +
-                candidates.map {|j| j[:args] }.to_s
+                candidates.map { |j| j[:args] }.to_s
             end
           end
         end
@@ -134,17 +145,20 @@ module RSpec
           def initialize(the_time)
             @time = the_time
           end
+
           def matches?(job)
             job[:run_at] == @time
           end
+
           def desc
             "at #{@time}"
           end
+
           def failed_msg(candidates)
             if candidates.length == 1
-              "job at #{candidates.first[:run_at].to_s}"
+              "job at #{candidates.first[:run_at]}"
             else
-              "jobs at #{candidates.map {|c| c[:run_at]}}"
+              "jobs at #{candidates.map { |c| c[:run_at] }}"
             end
           end
         end
