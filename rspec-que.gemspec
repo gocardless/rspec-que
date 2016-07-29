@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
 
   s.has_rdoc = false
-  s.files = `git ls-files`.split($INPUT_RECORD_SEPARATOR)
+  s.files = `git ls-files lib README.md LICENSE *.gemspec -z`.split("\x0")
   s.require_paths = %w(lib)
 
   s.add_runtime_dependency('rspec-mocks')
