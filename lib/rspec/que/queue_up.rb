@@ -32,8 +32,12 @@ module RSpec
         end
 
         def at(the_time)
-          matcher = QueuedAt.new(the_time)
-          @matchers << matcher
+          @matchers << QueuedAt.new(the_time)
+          self
+        end
+
+        def of_priority(priority)
+          @matchers << QueuedPriority.new(priority)
           self
         end
 
@@ -159,6 +163,28 @@ module RSpec
               "job at #{candidates.first[:run_at]}"
             else
               "jobs at #{candidates.map { |c| c[:run_at] }}"
+            end
+          end
+        end
+
+        class QueuedPriority
+          def initialize(priority)
+            @priority = priority
+          end
+
+          def matches?(job)
+            job[:priority] == @priority
+          end
+
+          def desc
+            "of priority #{@priority}"
+          end
+
+          def failed_msg(candidates)
+            if candidates.length == 1
+              "job of priority #{candidates.first[:priority]}"
+            else
+              "jobs of priority #{candidates.map { |c| c[:priority] }}"
             end
           end
         end
