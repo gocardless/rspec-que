@@ -184,4 +184,24 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       end
     end
   end
+
+  context "with jobs queued of a certain priority" do
+    let(:proc) do
+      lambda do
+        enqueued_jobs << { job_class: "AJob", args: ['kyubey'], priority: 1 }
+        enqueued_jobs << { job_class: "BJob", args: ['fav-pon'], priority: 30 }
+        enqueued_jobs << { job_class: "AJob", args: ['beetle'], priority: 30 }
+      end
+    end
+
+    describe '#of_priority' do
+      let(:instance) { described_class.new }
+      it "should match jobs of the specified priority" do
+        expect(instance.of_priority(30).matches?(proc)).to eq(true)
+        expect(instance.failure_message_when_negated).to eq(
+          %(expected not to enqueue a job of priority 30, got 2 enqueued: BJob[fav-pon], AJob[beetle])
+        )
+      end
+    end
+  end
 end
