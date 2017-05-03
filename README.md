@@ -3,7 +3,18 @@
 This gem defines a matcher for checking that Que jobs have been enqueued,
 in the style of [rspec-activejob](https://github.com/gocardless/rspec-activejob).
 
+## Installation
+
+Add the dependency to your application's Gemfile:
+
+    gem 'rspec-que', '~> 1.1.0'
+
+And then install from your Gemfile:
+
+    $ bundle
+
 ## Usage
+
 The matcher expects a block of code, and will expect that code to enqueue a job
 in Que. The matcher can take a class for the job as its arguments. It can also
 expect the job to be queued with arguments via `.with(arg1, arg2)` or at a
