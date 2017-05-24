@@ -1,15 +1,25 @@
 require 'rspec/mocks/argument_list_matcher'
 require 'time'
+require 'forwardable'
+
+require_relative 'queue_up/queued_something'
+require_relative 'queue_up/queued_priority'
+require_relative 'queue_up/queued_class'
+require_relative 'queue_up/queued_args'
+require_relative 'queue_up/queued_at'
+require_relative 'queue_up/queue_count'
 
 module RSpec
   module Que
     module Matchers
       class QueueUp
         include RSpec::Matchers::Composable
+        extend Forwardable
 
         def initialize(job_class = nil)
           @matchers = [QueuedSomething.new]
           @matchers << QueuedClass.new(job_class) if job_class
+          @count_matcher = QueueCount.new(self, QueueCount::EXACTLY, 1)
           @job_class = job_class
           @stages = []
         end
@@ -23,7 +33,10 @@ module RSpec
             @stages << { matcher: matcher, candidates: @matched_jobs.dup }
             @matched_jobs.delete_if { |job| !matcher.matches?(job) }
           end
-          @matched_jobs.any?
+
+          @stages << { matcher: @count_matcher, candidates: @matched_jobs.dup }
+
+          @count_matcher.matches?(@matched_jobs.count)
         end
 
         def with(*args)
@@ -40,6 +53,13 @@ module RSpec
           @matchers << QueuedPriority.new(priority)
           self
         end
+
+        def_delegators :@count_matcher,
+                       :exactly,
+                       :at_least,
+                       :at_most,
+                       :once,
+                       :twice
 
         def failure_message
           # last stage to have any candidate jobs
@@ -76,117 +96,15 @@ module RSpec
         end
 
         def job_description
-          @matchers.map(&:desc).join(" ")
+          if @count_matcher.default?
+            @matchers.map(&:desc).join(" ")
+          else
+            [*@matchers, @count_matcher].map(&:desc).join(" ")
+          end
         end
 
         def format_job(job)
           "#{job[:job_class]}[" + job[:args].join(", ") + "]"
-        end
-
-        class QueuedSomething
-          def matches?(_job)
-            true
-          end
-
-          def desc
-            "a job"
-          end
-
-          def failed_msg(_last_found)
-            "nothing"
-          end
-        end
-
-        class QueuedClass
-          attr_reader :job_class
-          def initialize(job_class)
-            @job_class = job_class
-          end
-
-          def matches?(job)
-            job[:job_class] == job_class.to_s
-          end
-
-          def desc
-            "of class #{job_class}"
-          end
-
-          def failed_msg(candidates)
-            classes = candidates.map { |c| c[:job_class] }
-            if classes.length == 1
-              classes.first
-            else
-              "#{classes.length} jobs of class [#{classes.join(', ')}]"
-            end
-          end
-        end
-
-        class QueuedArgs
-          def initialize(args)
-            @args = args
-            @argument_list_matcher = RSpec::Mocks::ArgumentListMatcher.new(*args)
-          end
-
-          def matches?(job)
-            @argument_list_matcher.args_match?(*job[:args])
-          end
-
-          def desc
-            "with args #{@args}"
-          end
-
-          def failed_msg(candidates)
-            if candidates.length == 1
-              "job enqueued with #{candidates.first[:args]}"
-            else
-              "#{candidates.length} jobs with args: " +
-                candidates.map { |j| j[:args] }.to_s
-            end
-          end
-        end
-
-        class QueuedAt
-          def initialize(the_time)
-            @time = the_time
-          end
-
-          def matches?(job)
-            job[:run_at] == @time
-          end
-
-          def desc
-            "at #{@time}"
-          end
-
-          def failed_msg(candidates)
-            if candidates.length == 1
-              "job at #{candidates.first[:run_at]}"
-            else
-              "jobs at #{candidates.map { |c| c[:run_at] }}"
-            end
-          end
-        end
-
-        class QueuedPriority
-          def initialize(priority)
-            @priority = priority
-          end
-
-          def matches?(job)
-            job[:priority] == @priority
-          end
-
-          def desc
-            "of priority #{@priority}"
-          end
-
-          def failed_msg(candidates)
-            if candidates.length == 1
-              "job of priority #{candidates.first[:priority]}"
-            else
-              "jobs of priority #{candidates.map { |c| c[:priority] }}"
-            end
-          end
         end
       end
     end
