@@ -2,6 +2,13 @@ require 'rspec/mocks/argument_list_matcher'
 require 'time'
 require 'forwardable'
 
+require_relative 'queue_up/queued_something'
+require_relative 'queue_up/queued_priority'
+require_relative 'queue_up/queued_class'
+require_relative 'queue_up/queued_args'
+require_relative 'queue_up/queued_at'
+require_relative 'queue_up/queue_count'
+
 module RSpec
   module Que
     module Matchers
@@ -98,178 +105,6 @@ module RSpec
 
         def format_job(job)
           "#{job[:job_class]}[" + job[:args].join(", ") + "]"
-        end
-
-        class QueuedSomething
-          def matches?(_job)
-            true
-          end
-
-          def desc
-            "a job"
-          end
-
-          def failed_msg(_last_found)
-            "nothing"
-          end
-        end
-
-        class QueuedClass
-          attr_reader :job_class
-          def initialize(job_class)
-            @job_class = job_class
-          end
-
-          def matches?(job)
-            job[:job_class] == job_class.to_s
-          end
-
-          def desc
-            "of class #{job_class}"
-          end
-
-          def failed_msg(candidates)
-            classes = candidates.map { |c| c[:job_class] }
-            if classes.length == 1
-              classes.first
-            else
-              "#{classes.length} jobs of class [#{classes.join(', ')}]"
-            end
-          end
-        end
-
-        class QueuedArgs
-          def initialize(args)
-            @args = args
-            @argument_list_matcher = RSpec::Mocks::ArgumentListMatcher.new(*args)
-          end
-
-          def matches?(job)
-            @argument_list_matcher.args_match?(*job[:args])
-          end
-
-          def desc
-            "with args #{@args}"
-          end
-
-          def failed_msg(candidates)
-            if candidates.length == 1
-              "job enqueued with #{candidates.first[:args]}"
-            else
-              "#{candidates.length} jobs with args: " +
-                candidates.map { |j| j[:args] }.to_s
-            end
-          end
-        end
-
-        class QueuedAt
-          def initialize(the_time)
-            @time = the_time
-          end
-
-          def matches?(job)
-            job[:run_at] == @time
-          end
-
-          def desc
-            "at #{@time}"
-          end
-
-          def failed_msg(candidates)
-            if candidates.length == 1
-              "job at #{candidates.first[:run_at]}"
-            else
-              "jobs at #{candidates.map { |c| c[:run_at] }}"
-            end
-          end
-        end
-
-        class QueuedPriority
-          def initialize(priority)
-            @priority = priority
-          end
-
-          def matches?(job)
-            job[:priority] == @priority
-          end
-
-          def desc
-            "of priority #{@priority}"
-          end
-
-          def failed_msg(candidates)
-            if candidates.length == 1
-              "job of priority #{candidates.first[:priority]}"
-            else
-              "jobs of priority #{candidates.map { |c| c[:priority] }}"
-            end
-          end
-        end
-      end
-
-      class QueueCount
-        EXACTLY = :==
-        AT_LEAST = :>=
-        AT_MOST = :<=
-
-        def initialize(parent_matcher, comparator, number)
-          @number = number
-          @comparator = comparator
-          @parent = parent_matcher
-        end
-
-        def once
-          exactly(1)
-          @parent
-        end
-
-        def twice
-          exactly(2)
-          @parent
-        end
-
-        def exactly(n)
-          set(EXACTLY, n)
-        end
-
-        def at_least(n)
-          set(AT_LEAST, n)
-        end
-
-        def at_most(n)
-          set(AT_MOST, n)
-        end
-
-        def times
-          @parent
-        end
-
-        def matches?(actual_number)
-          actual_number.send(@comparator, @number)
-        end
-
-        def desc
-          case @comparator
-          when EXACTLY then "exactly #{@number} times"
-          when AT_LEAST then "at least #{@number} times"
-          when AT_MOST then "at most #{@number} times"
-          end
-        end
-
-        def failed_msg(candidates)
-          "#{candidates.length} jobs"
-        end
-
-        def default?
-          @comparator == EXACTLY && @number == 1
-        end
-
-        private
-
-        def set(comparator, number)
-          @comparator = comparator
-          @number = number
-          self
         end
       end
     end
