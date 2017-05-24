@@ -46,7 +46,7 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       let(:proc) { -> { enqueued_jobs << job_a << job_b } }
 
       context "and one is of acceptable type" do
-        it { is_expected.to be(true) }
+        it { is_expected.to be(false) }
       end
 
       context "and we were expecting none of the first type" do
@@ -189,7 +189,6 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
     let(:proc) do
       lambda do
         enqueued_jobs << { job_class: "AJob", args: ['kyubey'], priority: 1 }
-        enqueued_jobs << { job_class: "BJob", args: ['fav-pon'], priority: 30 }
         enqueued_jobs << { job_class: "AJob", args: ['beetle'], priority: 30 }
       end
     end
@@ -198,7 +197,7 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       it "should match jobs of the specified priority" do
         expect(instance.of_priority(30).matches?(proc)).to eq(true)
         expect(instance.failure_message_when_negated).to eq(
-          %(expected not to enqueue a job of priority 30, got 2 enqueued: BJob[fav-pon], AJob[beetle])
+          %(expected not to enqueue a job of priority 30, got 1 enqueued: AJob[beetle])
         )
       end
     end
@@ -382,7 +381,7 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
           specify do
             subject
             expect(instance.failure_message).
-              to eq("expected to enqueue a job of class AJob with args [\"arg1\"] exactly 1 times, but found 2 jobs")
+              to eq("expected to enqueue a job of class AJob with args [\"arg1\"], but found 2 jobs")
           end
         end
 

@@ -12,7 +12,7 @@ module RSpec
         def initialize(job_class = nil)
           @matchers = [QueuedSomething.new]
           @matchers << QueuedClass.new(job_class) if job_class
-          @count_matcher = QueueCount.new(self, QueueCount::AT_LEAST, 1)
+          @count_matcher = QueueCount.new(self, QueueCount::EXACTLY, 1)
           @job_class = job_class
           @stages = []
         end
@@ -261,7 +261,7 @@ module RSpec
         end
 
         def default?
-          @comparator == AT_LEAST && @number == 1
+          @comparator == EXACTLY && @number == 1
         end
 
         private
