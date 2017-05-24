@@ -1,15 +1,18 @@
 require 'rspec/mocks/argument_list_matcher'
 require 'time'
+require 'forwardable'
 
 module RSpec
   module Que
     module Matchers
       class QueueUp
         include RSpec::Matchers::Composable
+        extend Forwardable
 
         def initialize(job_class = nil)
           @matchers = [QueuedSomething.new]
           @matchers << QueuedClass.new(job_class) if job_class
+          @count_matcher = QueueCount.new(self, QueueCount::AT_LEAST, 1)
           @job_class = job_class
           @stages = []
         end
@@ -23,7 +26,10 @@ module RSpec
             @stages << { matcher: matcher, candidates: @matched_jobs.dup }
             @matched_jobs.delete_if { |job| !matcher.matches?(job) }
           end
-          @matched_jobs.any?
+
+          @stages << { matcher: @count_matcher, candidates: @matched_jobs.dup }
+
+          @count_matcher.matches?(@matched_jobs.count)
         end
 
         def with(*args)
@@ -40,6 +46,13 @@ module RSpec
           @matchers << QueuedPriority.new(priority)
           self
         end
+
+        def_delegators :@count_matcher,
+                       :exactly,
+                       :at_least,
+                       :at_most,
+                       :once,
+                       :twice
 
         def failure_message
           # last stage to have any candidate jobs
@@ -76,7 +89,11 @@ module RSpec
         end
 
         def job_description
-          @matchers.map(&:desc).join(" ")
+          if @count_matcher.default?
+            @matchers.map(&:desc).join(" ")
+          else
+            [*@matchers, @count_matcher].map(&:desc).join(" ")
+          end
         end
 
         def format_job(job)
@@ -187,6 +204,72 @@ module RSpec
               "jobs of priority #{candidates.map { |c| c[:priority] }}"
             end
           end
+        end
+      end
+
+      class QueueCount
+        EXACTLY = :==
+        AT_LEAST = :>=
+        AT_MOST = :<=
+
+        def initialize(parent_matcher, comparator, number)
+          @number = number
+          @comparator = comparator
+          @parent = parent_matcher
+        end
+
+        def once
+          exactly(1)
+          @parent
+        end
+
+        def twice
+          exactly(2)
+          @parent
+        end
+
+        def exactly(n)
+          set(EXACTLY, n)
+        end
+
+        def at_least(n)
+          set(AT_LEAST, n)
+        end
+
+        def at_most(n)
+          set(AT_MOST, n)
+        end
+
+        def times
+          @parent
+        end
+
+        def matches?(actual_number)
+          actual_number.send(@comparator, @number)
+        end
+
+        def desc
+          case @comparator
+          when EXACTLY then "exactly #{@number} times"
+          when AT_LEAST then "at least #{@number} times"
+          when AT_MOST then "at most #{@number} times"
+          end
+        end
+
+        def failed_msg(candidates)
+          "#{candidates.length} jobs"
+        end
+
+        def default?
+          @comparator == AT_LEAST && @number == 1
+        end
+
+        private
+
+        def set(comparator, number)
+          @comparator = comparator
+          @number = number
+          self
         end
       end
     end

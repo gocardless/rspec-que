@@ -195,12 +195,209 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
     end
 
     describe '#of_priority' do
-      let(:instance) { described_class.new }
       it "should match jobs of the specified priority" do
         expect(instance.of_priority(30).matches?(proc)).to eq(true)
         expect(instance.failure_message_when_negated).to eq(
           %(expected not to enqueue a job of priority 30, got 2 enqueued: BJob[fav-pon], AJob[beetle])
         )
+      end
+    end
+  end
+
+  context "with a certain number of expected jobs" do
+    describe "#exactly(2).times" do
+      let(:instance) { described_class.new.exactly(2).times }
+
+      context "when job is enqueued 2 times" do
+        let(:proc) do
+          lambda do
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+          end
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context "when job is enqeued less than 2 times" do
+        let(:proc) { -> { enqueued_jobs << {} } }
+
+        it { is_expected.to eq(false) }
+        specify do
+          subject
+          expect(instance.failure_message).
+            to eq("expected to enqueue a job exactly 2 times, but found 1 jobs")
+        end
+      end
+
+      context "when job is enqeued more than 2 times" do
+        let(:proc) do
+          lambda do
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+          end
+        end
+
+        it { is_expected.to eq(false) }
+        specify do
+          subject
+          expect(instance.failure_message).
+            to eq("expected to enqueue a job exactly 2 times, but found 3 jobs")
+        end
+      end
+
+      context "when job is enqeued zero times" do
+        let(:proc) { -> {} }
+
+        it { is_expected.to eq(false) }
+        specify do
+          subject
+          expect(instance.failure_message).
+            to eq("expected to enqueue a job exactly 2 times, but found nothing")
+        end
+      end
+    end
+
+    describe "#at_least(2).times" do
+      let(:instance) { described_class.new.at_least(2).times }
+
+      context "when job is enqueued 2 times" do
+        let(:proc) do
+          lambda do
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+          end
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context "when job is enqeued less than 2 times" do
+        let(:proc) { -> { enqueued_jobs << {} } }
+
+        it { is_expected.to eq(false) }
+        specify do
+          subject
+          expect(instance.failure_message).
+            to eq("expected to enqueue a job at least 2 times, but found 1 jobs")
+        end
+      end
+
+      context "when job is enqeued more than 2 times" do
+        let(:proc) do
+          lambda do
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+          end
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context "when job is enqeued zero times" do
+        let(:proc) { -> {} }
+
+        it { is_expected.to eq(false) }
+        specify do
+          subject
+          expect(instance.failure_message).
+            to eq("expected to enqueue a job at least 2 times, but found nothing")
+        end
+      end
+    end
+
+    describe "#at_most(2).times" do
+      let(:instance) { described_class.new.at_most(2).times }
+
+      context "when job is enqueued 2 times" do
+        let(:proc) do
+          lambda do
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+          end
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context "when job is enqeued less than 2 times" do
+        let(:proc) { -> { enqueued_jobs << {} } }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context "when job is enqeued more than 2 times" do
+        let(:proc) do
+          lambda do
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+            enqueued_jobs << {}
+          end
+        end
+
+        it { is_expected.to eq(false) }
+        specify do
+          subject
+          expect(instance.failure_message).
+            to eq("expected to enqueue a job at most 2 times, but found 3 jobs")
+        end
+      end
+
+      context "when job is enqeued zero times" do
+        let(:proc) { -> {} }
+
+        it { is_expected.to eq(true) }
+      end
+    end
+
+    describe "#once" do
+      let(:instance) { described_class.new.once }
+
+      context "when a job is enqueued once" do
+        let(:proc) { -> { enqueued_jobs << {} } }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context "with other expectations" do
+        context "when enqueued once" do
+          let(:instance) { described_class.new("AJob").with("arg1").once }
+          let(:proc) { -> { enqueued_jobs << { job_class: "AJob", args: ["arg1"] } } }
+
+          it { is_expected.to eq(true) }
+        end
+
+        context "when enqueued more than once" do
+          let(:instance) { described_class.new("AJob").with("arg1").once }
+          let(:proc) do
+            lambda do
+              enqueued_jobs << { job_class: "AJob", args: ["arg1"] }
+              enqueued_jobs << { job_class: "AJob", args: ["arg1"] }
+            end
+          end
+
+          it { is_expected.to eq(false) }
+          specify do
+            subject
+            expect(instance.failure_message).
+              to eq("expected to enqueue a job of class AJob with args [\"arg1\"] exactly 1 times, but found 2 jobs")
+          end
+        end
+
+        context "with multiple job classes" do
+          let(:instance) { described_class.new("AJob").with("arg1").once }
+          let(:proc) do
+            lambda do
+              enqueued_jobs << { job_class: "AJob", args: ["arg1"] }
+              enqueued_jobs << { job_class: "BJob", args: ["arg1"] }
+              enqueued_jobs << { job_class: "BJob", args: ["arg1"] }
+            end
+          end
+
+          it { is_expected.to eq(true) }
+        end
       end
     end
   end
