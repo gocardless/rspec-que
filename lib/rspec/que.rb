@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rspec/que/queue_up'
 
 module RSpec

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rspec/que'
 require 'pry'
 
@@ -8,9 +10,7 @@ RSpec.configure do |config|
 end
 
 module Que
-  # rubocop:disable Lint/UnusedMethodArgument
   def self.execute(args)
     # Que placeholder
   end
-  # rubocop:enable Lint/UnusedMethodArgument
 end

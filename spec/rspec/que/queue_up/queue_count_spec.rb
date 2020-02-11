@@ -191,8 +191,10 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
         it { is_expected.to eq(false) }
         specify do
           subject
-          expect(instance.failure_message).
-            to eq("expected to enqueue a job of class AJob with args [\"arg1\"], but found 2 jobs")
+          expect(instance.failure_message).to eq(
+            "expected to enqueue a job of class AJob with args [\"arg1\"], " \
+            "but found 2 jobs"
+          )
         end
       end
 
