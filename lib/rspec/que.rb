@@ -6,6 +6,10 @@ module RSpec
       Matchers::QueueUp.new(job_class)
     end
 
+    def queue_up_anything
+      Matchers::QueueUp.new(nil)
+    end
+
     def purge_jobs
       ::Que.execute "DELETE FROM que_jobs"
     end
