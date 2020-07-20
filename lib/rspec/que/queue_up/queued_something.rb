@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSpec
   module Que
     module Matchers
@@ -19,4 +21,3 @@ module RSpec
     end
   end
 end
-

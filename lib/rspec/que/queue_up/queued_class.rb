@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSpec
   module Que
     module Matchers
@@ -9,11 +11,19 @@ module RSpec
           end
 
           def matches?(job)
-            job[:job_class] == job_class.to_s
+            if job_class.is_a?(RSpec::Mocks::ArgumentMatchers::AnyArgMatcher)
+              !job[:job_class].nil?
+            else
+              job[:job_class] == job_class.to_s
+            end
           end
 
           def desc
-            "of class #{job_class}"
+            if job_class.is_a?(RSpec::Mocks::ArgumentMatchers::AnyArgMatcher)
+              "of any class"
+            else
+              "of class #{job_class}"
+            end
           end
 
           def failed_msg(candidates)

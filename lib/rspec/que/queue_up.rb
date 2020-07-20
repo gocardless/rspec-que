@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rspec/mocks/argument_list_matcher'
 require 'time'
 require 'forwardable'

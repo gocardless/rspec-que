@@ -1,4 +1,6 @@
-require File.expand_path('../lib/rspec/que/version', __FILE__)
+# frozen_string_literal: true
+
+require File.expand_path('lib/rspec/que/version', __dir__)
 require 'date'
 
 Gem::Specification.new do |s|
@@ -17,11 +19,12 @@ Gem::Specification.new do |s|
 
   s.has_rdoc = false
   s.files = `git ls-files lib README.md LICENSE *.gemspec -z`.split("\x0")
-  s.require_paths = %w(lib)
+  s.require_paths = %w[lib]
 
   s.add_runtime_dependency('rspec-mocks')
 
   s.add_development_dependency('rspec')
   s.add_development_dependency('rspec-its')
+  s.add_development_dependency("rspec_junit_formatter", "~> 0.4")
   s.add_development_dependency('rubocop')
 end

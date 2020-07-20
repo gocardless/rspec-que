@@ -1,0 +1,54 @@
+version: 2.1
+
+jobs:
+  test:
+    parameters:
+      ruby-version:
+        type: string
+      rails-version:
+        type: string
+
+    docker:
+      - image: ruby:<<parameters.ruby-version>>
+        environment:
+          - RAILS_VERSION=<<parameters.rails-version>>
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: rspec_que-bundler-{{ checksum "rspec-que.gemspec" }}
+
+      - run: gem install bundler -v 2.1.4
+      - run: bundle config set path 'vendor/bundle'
+      - run: bundle install
+
+      - save_cache:
+          key: rspec_que-bundler-{{ checksum "rspec-que.gemspec" }}
+          paths:
+            - vendor/bundle
+
+      - run:
+          command: |
+            bundle exec rspec --profile 10 \
+                              --format RspecJunitFormatter \
+                              --out /tmp/test-results/rspec.xml \
+                              --format progress \
+                              spec
+
+      - store_test_results:
+          path: /tmp/test-results
+
+      - run: bundle exec rubocop --parallel --extra-details --display-style-guide
+
+workflows:
+  version: 2
+  tests:
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              ruby-version: ["2.4", "2.5", "2.6", "2.7"]
+              rails-version: ["5.2", "6.0"]
+            exclude:
+              - ruby-version: "2.4"
+                rails-version: "6.0"
