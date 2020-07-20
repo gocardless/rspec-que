@@ -1,3 +1,7 @@
+## 2.0.1 (July 20, 2020)
+
+* Fix matches to support `anything` matcher
+
 ## 2.0.0 (May 24, 2017)
 
 * Support matching on the number of jobs enqueued
