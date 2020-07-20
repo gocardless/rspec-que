@@ -24,6 +24,17 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
       expect(instance.failure_message).
         to eq("expected to enqueue a job, but found nothing")
     end
+
+    context "when it enqueues a job and we allow anything" do
+      let(:job_class) { anything }
+
+      it { is_expected.to be(false) }
+      specify do
+        matches?
+        expect(instance.failure_message).
+          to eq("expected to enqueue a job of any class, but found nothing")
+      end
+    end
   end
 
   context "when something gets enqueued" do
@@ -40,6 +51,12 @@ RSpec.describe RSpec::Que::Matchers::QueueUp do
         expect(instance.failure_message).
           to eq("expected to enqueue a job of class BJob, but found AJob")
       end
+    end
+
+    context "and we expect anything" do
+      let(:job_class) { anything }
+
+      it { is_expected.to be(true) }
     end
 
     context "when it enqueues two jobs" do
